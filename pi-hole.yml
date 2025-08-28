@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   pihole:
-    image: pihole/pihole:2025.01
+    image: pihole/pihole:latest
     environment:
       TZ: "Europe/Amsterdam"
       WEBPASSWORD: "changeme"
