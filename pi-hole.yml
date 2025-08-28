@@ -3,45 +3,22 @@ version: "3.8"
 services:
   pihole:
     image: pihole/pihole:2025.01
+    container_name: pihole
+    network_mode: "host"              # binds DNS directly on the host (53/udp,tcp)
+    restart: unless-stopped
     environment:
-      TZ: "UTC"                         # set your TZ
+      TZ: "UTC"                       # change if you want
       WEBPASSWORD: "changeme"
+      WEB_PORT: "8088"                # avoid conflict with Traefik on :80
       DNSMASQ_USER: "root"
       DNSMASQ_LISTENING: "all"
-      FTLCONF_LOCAL_IPV4: "192.168.2.50"   # IP of the node running this service
-      PIHOLE_DNS_: "1.1.1.1;1.0.0.1"       # upstream DNS
+      FTLCONF_LOCAL_IPV4: "192.168.2.50"   # IP of this node
+      PIHOLE_DNS_: "1.1.1.1;1.0.0.1"       # upstream resolvers
     volumes:
       - pihole_etc:/etc/pihole
       - dnsmasq_etc:/etc/dnsmasq.d
-    networks:
-      - proxy
-    # Bind DNS on THIS node only (no routing mesh)
-    ports:
-      - target: 53
-        published: 53
-        protocol: tcp
-        mode: host
-      - target: 53
-        published: 53
-        protocol: udp
-        mode: host
-      # DO NOT publish 67/udp unless you move Pi-hole out of Swarm (see below)
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.hostname == node-master     # make sure this matches exactly
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.pihole.rule=Host(`pihole.skynet.gov`)"
-        - "traefik.http.routers.pihole.entrypoints=websecure"
-        - "traefik.http.services.pihole.loadbalancer.server.port=80"
+    # No DHCP here (port 67). If you ever need DHCP, add NET_ADMIN and config later.
 
 volumes:
   pihole_etc:
   dnsmasq_etc:
-
-networks:
-  proxy:
-    external: true
