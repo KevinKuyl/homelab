@@ -4,23 +4,21 @@ services:
   traefik:
     image: traefik:v3.1
     command:
-      # Dashboard
       - "--api.dashboard=true"
 
       # Entrypoints
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.websecure.http.tls=true"  # built-in self-signed cert
+      - "--entrypoints.websecure.http.tls=true"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
 
-      # Swarm provider (v3)
+      # Swarm provider
       - "--providers.swarm=true"
       - "--providers.swarm.endpoint=unix:///var/run/docker.sock"
       - "--providers.swarm.network=proxy"
       - "--providers.swarm.exposedbydefault=false"
 
-      # Logs
       - "--log.level=INFO"
     ports:
       - "80:80"
@@ -37,6 +35,8 @@ services:
         - "traefik.http.routers.dashboard.rule=Host(`traefik.skynet.gov`)"
         - "traefik.http.routers.dashboard.entrypoints=websecure"
         - "traefik.http.routers.dashboard.service=api@internal"
+        # (Optional) quiet the "port is missing" warning for the traefik service itself
+        - "traefik.http.services.traefik.loadbalancer.server.port=9999"
 
 networks:
   proxy:
