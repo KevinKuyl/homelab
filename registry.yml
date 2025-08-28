@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  registry:
+    image: registry:2
+    environment:
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
+    volumes:
+      - registry_data:/var/lib/registry
+    networks:
+      - proxy
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.registry.rule=Host(`registry.skynet.gov`)"
+        - "traefik.http.routers.registry.entrypoints=websecure"
+        - "traefik.http.services.registry.loadbalancer.server.port=5000"
+
+volumes:
+  registry_data:
+
+networks:
+  proxy:
+    external: true

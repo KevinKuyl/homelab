@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.54.0
+    volumes:
+      - prometheus_data:/prometheus
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - proxy
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.prometheus.rule=Host(`prometheus.skynet.gov`)"
+        - "traefik.http.routers.prometheus.entrypoints=websecure"
+
+volumes:
+  prometheus_data:
+
+networks:
+  proxy:
+    external: true

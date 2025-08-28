@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  portainer:
+    image: portainer/portainer-ce:2.21.1
+    ports:
+      - "9000:9000"
+    volumes:
+      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - proxy
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.portainer.rule=Host(`portainer.skynet.gov`)"
+        - "traefik.http.routers.portainer.entrypoints=websecure"
+
+volumes:
+  portainer_data:
+
+networks:
+  proxy:
+    external: true

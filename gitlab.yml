@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:17.2.2-ce.0
+    hostname: gitlab.skynet.gov
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.skynet.gov'
+        gitlab_rails['gitlab_shell_ssh_port'] = 2222
+    ports:
+      - "8081:80"
+      - "8443:443"
+      - "2222:22"
+    volumes:
+      - gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
+    networks:
+      - proxy
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.gitlab.rule=Host(`gitlab.skynet.gov`)"
+        - "traefik.http.routers.gitlab.entrypoints=websecure"
+        - "traefik.http.services.gitlab.loadbalancer.server.port=80"
+
+volumes:
+  gitlab_config:
+  gitlab_logs:
+  gitlab_data:
+
+networks:
+  proxy:
+    external: true

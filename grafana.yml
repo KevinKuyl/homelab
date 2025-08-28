@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  grafana:
+    image: grafana/grafana:11.1.0
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=changeme
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - proxy
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.grafana.rule=Host(`grafana.skynet.gov`)"
+        - "traefik.http.routers.grafana.entrypoints=websecure"
+
+volumes:
+  grafana_data:
+
+networks:
+  proxy:
+    external: true
