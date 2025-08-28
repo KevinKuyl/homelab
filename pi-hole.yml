@@ -4,21 +4,34 @@ services:
   pihole:
     image: pihole/pihole:2025.01
     environment:
-      TZ: "UTC"                       # change to your timezone
-      WEBPASSWORD: "changeme"         # web UI password
+      TZ: "UTC"                         # set your TZ
+      WEBPASSWORD: "changeme"
       DNSMASQ_USER: "root"
-      FTLCONF_LOCAL_IPV4: 192.168.2.50  # set to the IP of THIS node
+      DNSMASQ_LISTENING: "all"
+      FTLCONF_LOCAL_IPV4: "192.168.2.50"   # IP of the node running this service
+      PIHOLE_DNS_: "1.1.1.1;1.0.0.1"       # upstream DNS
     volumes:
       - pihole_etc:/etc/pihole
       - dnsmasq_etc:/etc/dnsmasq.d
     networks:
       - proxy
+    # Bind DNS on THIS node only (no routing mesh)
     ports:
-      - "53:53/tcp"
-      - "53:53/udp"
+      - target: 53
+        published: 53
+        protocol: tcp
+        mode: host
+      - target: 53
+        published: 53
+        protocol: udp
+        mode: host
+      # DO NOT publish 67/udp unless you move Pi-hole out of Swarm (see below)
     deploy:
+      mode: replicated
+      replicas: 1
       placement:
-        constraints: [node.role == manager]
+        constraints:
+          - node.hostname == node-master     # make sure this matches exactly
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.pihole.rule=Host(`pihole.skynet.gov`)"
