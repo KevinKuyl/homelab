@@ -16,7 +16,6 @@ services:
     ports:
       - "53:53/tcp"
       - "53:53/udp"
-      - "67:67/udp"         # DHCP (optional — only if you want Pi-hole to do DHCP)
     deploy:
       placement:
         constraints: [node.role == manager]
