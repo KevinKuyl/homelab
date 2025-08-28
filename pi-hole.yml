@@ -3,21 +3,32 @@ version: "3.8"
 services:
   pihole:
     image: pihole/pihole:2025.01
-    container_name: pihole
-    network_mode: "host"              # binds DNS directly on the host (53/udp,tcp)
-    restart: unless-stopped
     environment:
-      TZ: "UTC"                       # change if you want
+      TZ: "Europe/Amsterdam"
       WEBPASSWORD: "changeme"
-      WEB_PORT: "8088"                # avoid conflict with Traefik on :80
       DNSMASQ_USER: "root"
       DNSMASQ_LISTENING: "all"
-      FTLCONF_LOCAL_IPV4: "192.168.2.50"   # IP of this node
-      PIHOLE_DNS_: "1.1.1.1;1.0.0.1"       # upstream resolvers
+      FTLCONF_LOCAL_IPV4: "192.168.2.50"   # LAN IP of the chosen node
+      PIHOLE_DNS_: "1.1.1.1;1.0.0.1"
     volumes:
       - pihole_etc:/etc/pihole
       - dnsmasq_etc:/etc/dnsmasq.d
-    # No DHCP here (port 67). If you ever need DHCP, add NET_ADMIN and config later.
+    # Publish DNS directly on the host of this task (no routing mesh)
+    ports:
+      - target: 53
+        published: 53
+        protocol: tcp
+        mode: host
+      - target: 53
+        published: 53
+        protocol: udp
+        mode: host
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.id == REPLACE_WITH_NODE_ID   # <- put your manager's node ID here
 
 volumes:
   pihole_etc:
