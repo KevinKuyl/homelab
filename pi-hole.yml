@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  pihole:
+    image: pihole/pihole:2025.01
+    environment:
+      TZ: "UTC"                       # change to your timezone
+      WEBPASSWORD: "changeme"         # web UI password
+      DNSMASQ_USER: "root"
+      FTLCONF_LOCAL_IPV4: 192.168.2.50  # set to the IP of THIS node
+    volumes:
+      - pihole_etc:/etc/pihole
+      - dnsmasq_etc:/etc/dnsmasq.d
+    networks:
+      - proxy
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp"         # DHCP (optional — only if you want Pi-hole to do DHCP)
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.pihole.rule=Host(`pihole.skynet.gov`)"
+        - "traefik.http.routers.pihole.entrypoints=websecure"
+        - "traefik.http.services.pihole.loadbalancer.server.port=80"
+
+volumes:
+  pihole_etc:
+  dnsmasq_etc:
+
+networks:
+  proxy:
+    external: true
