@@ -10,6 +10,7 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.websecure.http.tls=true"
+      - "--entrypoints.websecure.http.tls.certResolver=default"
 
       # ✅ use the Swarm provider (v3)
       - "--providers.swarm=true"
